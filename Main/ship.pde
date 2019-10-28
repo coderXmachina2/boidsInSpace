@@ -49,18 +49,21 @@ class Roci {
     if (isAccel) {
       accel();
     }
-    //vel.mult(0.5);
-    //acc = PVector.fromAngle(heading-PI/2); 
-    //pos.add(acc);
     
+    //recursive law of motion this is Netwons first law...
+    acc.mult(0.99995); //Like Asteroids, but not short of Newtons full first Law add more zeroes
+    pos.add(acc);
+    
+    //old convention
+    //vel.mult(0.5); //results in some crazy shaking, if you add velocity they will
     //pos.add(vel); //locks in from moving
-                    //old convention
+  
   }
 
   void accel(){    
     acc = PVector.fromAngle(heading-PI/2); 
-    acc.mult(0.9);
-    vel.mult(0.5);
+    acc.mult(0.995);
+    //vel.mult(0.5);
     pos.add(acc);
   }
 
@@ -79,7 +82,7 @@ class Roci {
     if (degrees(desired.heading()) < 90) {//rotate to the left
       println("Ship must rotate:  " + (-1 * degrees(desired.heading()) )+ "to the left\n"); 
     } else if(degrees(desired.heading()) > 90) { //rotate to the right
-      println("Ship must rotate: " + (degrees(desired.heading()) - 90) + "to the right\n"); 
+      println("Ship must rotate: " + (degrees(desired.heading()) - 90) + " to the left\n"); 
     } else{
        println("Engage engine!");
     }
@@ -94,11 +97,11 @@ class Roci {
   }
   
   void diagnostics(){
-    //print("Boid diagnostics\n");
+    print("Boid diagnostics\n");
     //print(b.heading());
     println("Heading: " + heading);
     //println("obj Vector Heading: " + obj.heading());
-    println("Tracking position: " + pos.x , pos.y);
+    println("Tracking position: " + pos.x , pos.y + "\n");
     //println("position Vector Heading:" + pos.heading());
     //println("Tracking Vel: " + vel.x , vel.y + "\n");
     print("\n");
@@ -107,11 +110,10 @@ class Roci {
    
   //boid CAS laws
   void applyForce(PVector force){
-    vel.add(force); //this force really just does orientation
-    
+    vel.add(force); //this force really just does orientation its a vector that points to the target.
   }
   
-  void fleet (ArrayList<Roci> rocis){ //fleet ruses does nothing
+  void fleet (ArrayList<Roci> rocis){ 
   //fleet rules are in effect when there are 2 or more together
   //fleet rules are always in effect
   //isAccel = true;
@@ -144,8 +146,8 @@ class Roci {
   
   PVector seek(PVector target) {
     
-    //PVector dest = new PVector(mouseX, mouseY); //a vector from mouse to boid
-    PVector desired = PVector.sub(obj, pos);  // A vector pointing from the position to the target
+    PVector mouseVect = new PVector(mouseX, mouseY); //a vector from mouse to boid
+    PVector desired = PVector.sub(mouseVect, pos);  // A vector pointing from the position to the target
     
     // Scale to maximum speed
     desired.normalize();
@@ -284,11 +286,13 @@ class Roci {
     vertex(-r, r*2);
     vertex(r, r*2);
     //line(pos.x, pos.y, 540 , 0);
+    
     if (isAccel) {
-      stroke(map(int(random(2)), 0, 1, 0, 255));
+      stroke(map(int(random(3)), 0, 1, 0, 255));
       noFill();
-      triangle(-r/2, r, r/2, r, 0, 2*r);
+      triangle(-r*1/2, r, r*1/2, r, 0, 2*r);
     }
+    
     stroke(255);
     popMatrix();
   }
