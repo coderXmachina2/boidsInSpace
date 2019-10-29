@@ -1,12 +1,25 @@
 spaceFleet fleet;
+Roci ship;
+
+//in order for shit to be deleted it has to be an array list
+
+// gui crap
+int messageTimer = 0;
+String messageText = "";
+
+//thrust timer
+int lastTimeCheck;
+int timeIntervalFlag = 3000; // 3 seconds because we are working with millis
 
 ArrayList<Asteroid> asteroids = new ArrayList<Asteroid>();
-float numast = 4;
+float numast = 10;  //straight up number of asteroids
 PVector temppos;
 
 void setup() {
   size(1680, 1050);
   fleet = new  spaceFleet ();                        //declare new spacefleet
+  
+  lastTimeCheck = millis();
   
   for (int i = 0; i < numast; i++) {
     asteroids.add(new Asteroid(temppos, random(80, 100), 1));
@@ -15,10 +28,19 @@ void setup() {
 }
 
 void draw () {
-  background(200, 200, 200);
+  background(0);
   line(0, height/2, width, height/2);
   line(width/2, 0, width/2, height);
-  fleet.run();                                        //run fleet, doesnt do much right now
+  fleet.run();      //run fleet, doesnt do much right now
+  /*
+  if ( millis() > lastTimeCheck + timeIntervalFlag ) {
+    fleet.fleetCommand(true);
+    lastTimeCheck = millis();
+    //println( "Fire Thrusters!" );
+      
+    //fleet.fleetCommand(false);  
+    
+  }*/
   
   //draw asteroids
   for (int i = 0; i < asteroids.size(); i++) {
@@ -29,11 +51,18 @@ void draw () {
       asteroid.update();
       asteroid.wrap();
       
+      fleet.checkFleetCollision(asteroid.pos, asteroid.r); //sending position and r of asteroids
+      //checkFleetCollision(asteroid.pos, asteroid.r);
+      //send it to the fleet first
+      //ship.checkCollision(asteroid.pos, asteroid.r); //sends asteroid position and size
       /*
-      if ((ship.hits(asteroid.pos, asteroid.r)) && (ship.flashing == false)) {
-        state = 2; //collision
-      }//That is a collision
+      if (   ship.hits(asteroid.pos, asteroid.r)   ) {//if this is true
+        println("Collision!");
+        //remove ship from play
+      }
+      */
       
+      /*
       for (int j = aships.size()-1; j >= 0; j--) {
         Alienship a = aships.get(j);
         if (ahitast) {
@@ -69,6 +98,9 @@ void keyPressed () { //on click take a new action
   //}
   if ((keyCode == UP) || key == 'w') { //rotate right
     fleet.fleetCommand(true);
+  } else if (key == 'e') {
+    fleet.killBoid();
+    //spaceFleet.remove(0);
   }
   
 }

@@ -73,9 +73,22 @@ class Roci {
     
     isAccel = b;    
   }
- 
-  void checkturn() { 
+  
+  //this is some code associated with ship collision
+  //function that returns a boolean and takes in vectors
+  boolean hits(PVector apos, float ar){
     
+    float d = dist(pos.x, pos.y, apos.x, apos.y);
+    if((d <= r + ar)){
+      return true; //ship has collided!
+    } else {
+      return false;
+    }
+    
+  }
+   
+  void checkturn() { 
+    /*
     PVector desired = PVector.sub(obj, pos);  // A vector pointing from the position to the target
     println("Measured obj and pos angle: " + degrees(desired.heading()));  
     
@@ -85,7 +98,7 @@ class Roci {
       println("Ship must rotate: " + (degrees(desired.heading()) - 90) + " to the left\n"); 
     } else{
        println("Engage engine!");
-    }
+    }*/
     
   } 
  
@@ -97,14 +110,16 @@ class Roci {
   }
   
   void diagnostics(){
-    print("Boid diagnostics\n");
+    //notice this outputs for all individual boids
+    //not a fleet diagnostic
+    //print("Boid diagnostics\n");
     //print(b.heading());
-    println("Heading: " + heading);
+    //println("Heading: " + heading);
     //println("obj Vector Heading: " + obj.heading());
-    println("Tracking position: " + pos.x , pos.y + "\n");
+    //println("Tracking position: " + pos.x , pos.y + "\n");
     //println("position Vector Heading:" + pos.heading());
     //println("Tracking Vel: " + vel.x , vel.y + "\n");
-    print("\n");
+    //print("\n");
   }
   
    
