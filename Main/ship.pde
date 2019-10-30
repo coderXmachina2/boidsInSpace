@@ -11,8 +11,11 @@ class Roci {
   
   //evasion
   PVector modEvade;
+  PVector evAs;
   
   float r;
+  float rSensorBub;
+  int senseDampen;
   boolean isAccel = false;
 
   float rotation;
@@ -20,7 +23,9 @@ class Roci {
   
   float maxforce;    // Maximum steering force
   float maxspeed;    // Maximum speed
-
+  
+  
+  
   Roci(float x, float y) {
     rotation = 0;
     pos = new PVector(x, y);
@@ -30,6 +35,8 @@ class Roci {
     
     
     r = 7.5;       //determines the size of the boid
+    rSensorBub = r+100;
+    senseDampen = 18;
     heading = 0;   //initial vector
 
     maxspeed = 10; //
@@ -82,18 +89,25 @@ class Roci {
     
     isAccel = b;    
   }
-  
+    
   //this is some code associated with ship collision
   //function that returns a boolean and takes in vectors
   boolean hits(PVector apos, float ar){
-    
     float d = dist(pos.x, pos.y, apos.x, apos.y);
     if((d <= r + ar)){
       return true; //ship has collided!
     } else {
       return false;
     }
-    
+  }
+  
+  boolean evadeAs(PVector apos, float ar){  
+    float d = dist(pos.x, pos.y, apos.x, apos.y);
+    if((d <= (rSensorBub - senseDampen)+ ar)){
+      return true; //ship detects need to evade
+    } else {
+      return false;
+    }
   }
    
   void checkturn() { 
@@ -140,12 +154,15 @@ class Roci {
   //fleet rules are in effect when there are 2 or more together
   //fleet rules are always in effect
   //pvector separation, alignment, and cohesion
+  //all of our video games are just recursive
   
     modSep = separate(rocis);   // Separation
     modAli = align(rocis);      // Alignment
     modCoh = cohesion(rocis);   // Cohesion
     
-    modEvade = evade(rocis);
+    //modEvade = evade();  /*position vector of the incoming asteroid*/);
+    //modEvade = evade(); //takes in the position vector of the asteroid
+    //modEvade = evade(evAs); //this does not know position of asteroid
     
     // Arbitrarily weigh forces
     modSep.mult(2.5);
@@ -153,7 +170,7 @@ class Roci {
     modCoh.mult(1.0);
     
     //
-    modEvade.mult(1.0);
+    //modEvade.mult(1.0);
     
     //add force vectors to acceleration, this is a course correction
     applyForce(modSep);//they will only ever move constant
@@ -190,7 +207,7 @@ class Roci {
   // For the average position (i.e. center) of all nearby boids, calculate steering vector towards that position
   PVector cohesion (ArrayList<Roci> rocis) {
     
-    float neighbordist = 200; //This is an imporant parameter
+    float neighbordist = 220; //This is an imporant parameter
                               //how far a ship has to be to be considered a member of the flock
     
     PVector sum = new PVector(0, 0);   // Start with empty vector to accumulate all positions
@@ -251,15 +268,19 @@ class Roci {
   // Method checks for nearby boids and steers away
   PVector separate (ArrayList<Roci> rocis) {
     
-    float desiredseparation = 25.0f;//reduce this and they become close in
+    float desiredseparation = 30.0f;//reduce this and they become close in
     
-    PVector steer = new PVector(0, 0, 0);
+    PVector steer = new PVector(0, 0, 0); //initialize a null steering force
     int count = 0;
+    
     // For every boid in the system, check if it's too close
     for (Roci other : rocis) {
-      float d = PVector.dist(pos, other.pos);
+      float d = PVector.dist(pos, other.pos); //position of the other...
+      
       // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
-      if ((d > 0) && (d < desiredseparation)) {
+      //instead of neighbour its the asteroid
+      
+      if ((d > 0) && (d < desiredseparation)) { //if it is within necessary bounds to disperse then callculate
         // Calculate vector pointing away from neighbor
         PVector diff = PVector.sub(pos, other.pos);
         diff.normalize();
@@ -268,7 +289,9 @@ class Roci {
         steer.add(diff);
         count++;            // Keep track of how many
       }
+      
     }
+    
     // Average -- divide by how many
     if (count > 0) {
       steer.div((float)count);
@@ -289,11 +312,9 @@ class Roci {
     return steer; //steering force
   }//end of separation rule
   
-  PVector evade (ArrayList<Roci> rocis) {//must be conscious of circles and asteroids
-    
-    return new PVector(0, 0);
-  }
-  
+  //evaive vector 
+  //imagine that the if from separate was already called
+ 
 
   ////////////////////////////////////////////////////////////////////////////render
 
@@ -301,8 +322,7 @@ class Roci {
     //line(mouseX, mouseY, pos.x,pos.y); //a line from mouse to boid
     line(pos.x , pos.y, width/2 , 0);      //a line from boid to obj
     
-      
-    circle(pos.x, pos.y, r+50);
+    circle(pos.x, pos.y, rSensorBub); //picture of a sensor circle
     
     float theta = vel.heading() + PI/2;
     heading = theta;
@@ -312,19 +332,6 @@ class Roci {
     translate(pos.x, pos.y);
     rotate(theta);
     
-    //
-    
-    
-    //line(pos.x, pos.y, 540 , 0);
-    
-    //if(flashing) {
-    //  stroke(map(int(random(2)), 0, 1, 0, 255));
-    //  flashtime += 0.1;
-    // if(flashtime > 5){
-    //    flashing = false;
-    // }
-    //}
-
     noFill();
     beginShape(TRIANGLES);
     vertex(0, -r*2);

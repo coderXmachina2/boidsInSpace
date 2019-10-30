@@ -11,7 +11,7 @@ int countDeployed = 0;
 
 //pulse jet params
 int timeIntervalFlag = 3000; // 3 seconds because we are working with millis
-int cuttThrustTime = 750; //cut thrust after this number of miliseconds
+int cuttThrustTime = 2000; //cut thrust after this number of miliseconds
 
 ArrayList<Asteroid> asteroids = new ArrayList<Asteroid>();
 float numast = 6;  //straight up number of asteroids
@@ -41,12 +41,14 @@ void draw () {
   line(width/2 - 100, 0, (width/2 - 100) + 200, 0); //top line  
   line( (width/2 - 100) + 200, 150, (width/2) + 100, 0); //right horizontal line
   
-  fleet.checkReachObj(width, height);
+  fleet.checkReachObj(width, height, countDeployed);
   fleet.run();    
   
   //println("Time Counter: " + millis());
   //println("Arg: " + millis() + "\n");
   
+  //this pulsejet needs to be vectorized/parametrised
+  {//code for future parametrization
   if(millis() > burnTimeCheck + timeIntervalFlag ){
     fleet.fleetCommand(false);
   }
@@ -56,7 +58,8 @@ void draw () {
     lastTimeCheck = millis(); //update
     fleet.fleetCommand(true);
   }
-    
+  }
+  
   //draw asteroids
   for (int i = 0; i < asteroids.size(); i++) {
       stroke(255);
@@ -67,22 +70,29 @@ void draw () {
       asteroid.wrap();
       
       fleet.checkFleetCollision(asteroid.pos, asteroid.r); //sending position and r of afleet.checkReachObj();steroids
+      fleet.fleetEvadeSubroutine(asteroid.pos, asteroid.r); //
+      
     }
 }
 
 void mousePressed (){ //on click take a new action
   //adds fleet in combination
   fleet.addFleet(new Roci(mouseX, mouseY)); //where you click make new roci  
-  fleet.addFleet(new Roci(mouseX+10, mouseY+10)); //where you click make new roci
-  fleet.addFleet(new Roci(mouseX+10, mouseY)); //where you click make new roci
-  fleet.addFleet(new Roci(mouseX, mouseY+10)); //where you click make new roci
-  fleet.addFleet(new Roci(mouseX-10, mouseY-10)); //where you click make new roci
+  
+  fleet.addFleet(new Roci(mouseX+40, mouseY+40)); //where you click make new roci
+  fleet.addFleet(new Roci(mouseX+40, mouseY)); //where you click make new roci
+  
+  
+  fleet.addFleet(new Roci(mouseX, mouseY+40)); //where you click make new roci
+  fleet.addFleet(new Roci(mouseX-40, mouseY-40)); //where you click make new roci
+  
   
   //fleet.addFleet(new Roci(mouseX, mouseY)); //where you click make new roci  
-  fleet.addFleet(new Roci(mouseX-10, mouseY+10)); //where you click make new roci
-  fleet.addFleet(new Roci(mouseX-10, mouseY)); //where you click make new roci
-  fleet.addFleet(new Roci(mouseX, mouseY-10)); //where you click make new roci
-  fleet.addFleet(new Roci(mouseX+10, mouseY-10)); //where you click make new roci
+  fleet.addFleet(new Roci(mouseX-40, mouseY+40)); //where you click make new roci
+  fleet.addFleet(new Roci(mouseX-40, mouseY)); //where you click make new roci
+  fleet.addFleet(new Roci(mouseX, mouseY-40)); //where you click make new roci
+  fleet.addFleet(new Roci(mouseX+40, mouseY-40)); //where you click make new roci
+  fleet.addFleet(new Roci(mouseX, mouseY-50)); //where you click make new roci
   
   countDeployed += 10;
   
