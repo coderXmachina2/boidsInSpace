@@ -1,5 +1,6 @@
 class spaceFleet {
   ArrayList<Roci> rocis;
+  int success = 0;
   
   spaceFleet(){
     rocis = new ArrayList<Roci>();
@@ -13,63 +14,43 @@ class spaceFleet {
   }
   
   //the fleet now knows relative position to asteroids
-  void checkFleetCollision(PVector apos, float ar){
-    //println("Asteroid Positions:" + apos.x + " " + apos.y);
-    //println("Asteroid ar:" + ar );
-    
-    for (int i = rocis.size()-1; i > -1; i--) {//iterates through all rocis
-    Roci b = rocis.get(i);
-    
-    if (   b.hits(apos, ar)   ) {//recursive checker
-         println("Collision!");
-         //remove the collided ship from play
-         rocis.remove(i); //kaboom!         
+  void checkFleetCollision(PVector apos, float ar){    
+    for (int i = rocis.size()-1; i > -1; i--){//iterates through all rocis
+      Roci b = rocis.get(i);
+      if (b.hits(apos, ar)){//recursive checker
+         rocis.remove(i); //kaboom!     
       }
+    }        
   }
-    
-    /* //This works to detect collision
-    for(Roci b : rocis ){//for all ships
-      //b is an array of rocs
-      print(rocis.get(0));    
-      //b.runRoci(rocis); //the ships fleet but have no rules 
-      if (   b.hits(apos, ar)   ) {//recursive checker
-         println("Collision!");
-         //remove the collided ship from play
-         
-         
-      } else{
-        //println("no collision");
+  
+  void checkReachObj(int width, int height){
+    for (int i = rocis.size()-1; i > -1; i--){//iterates through all rocis
+      Roci b = rocis.get(i);
+      if ( (b.pos.x > ((width/2) -100)) && (b.pos.x < ((width/2) + 100)) && (b.pos.y > 0) && (b.pos.y < 150) /*boids are in the rectangle*/ ){
+        rocis.remove(i); //kaboom!         
+        success += 1;
+        print(success + " Drones made it to the nauvoo.\n");
+      } 
+      
+      if(b.pos.y > height){
+        rocis.remove(i); //kaboom! 
       }
-    }*/
-        
-    
+    }    
   }
   
   void killBoid(){
-    //a fleet is a list of rocis
     if(rocis.size() > 0){
     rocis.remove( rocis.size()- 1); //remove the last added roci
     }
-    
   }
-  
-  //void rotFleet (float rotation){//not meant to be 
-     //for(Roci b : rocis ){
-      //b.setRotation(rotation);
-    //}
-  //}
-    
+       
   void run(){
     for(Roci b : rocis ){
       b.runRoci(rocis); //the ships fleet but have no rules    
     }
-  }
-  
-  //remove
+  }  
   
   void addFleet(Roci b){ //call to make new shis
     rocis.add(b);
-    //rocis is an array
-    //println("Fleet Size is:" + rocis.size());
-  }  
+  }
 }

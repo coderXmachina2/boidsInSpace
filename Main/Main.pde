@@ -3,23 +3,26 @@ Roci ship;
 
 //in order for shit to be deleted it has to be an array list
 
-// gui crap
-int messageTimer = 0;
-String messageText = "";
-
 //thrust timer
 int lastTimeCheck;
+int burnTimeCheck;
+
+int countDeployed = 0;
+
+//pulse jet params
 int timeIntervalFlag = 3000; // 3 seconds because we are working with millis
+int cuttThrustTime = 750; //cut thrust after this number of miliseconds
 
 ArrayList<Asteroid> asteroids = new ArrayList<Asteroid>();
-float numast = 10;  //straight up number of asteroids
+float numast = 6;  //straight up number of asteroids
 PVector temppos;
 
 void setup() {
   size(1680, 1050);
   fleet = new  spaceFleet ();                        //declare new spacefleet
   
-  lastTimeCheck = millis();
+  lastTimeCheck = millis(); //start counting the seconds
+  burnTimeCheck =  millis() + cuttThrustTime;
   
   for (int i = 0; i < numast; i++) {
     asteroids.add(new Asteroid(temppos, random(80, 100), 1));
@@ -31,17 +34,29 @@ void draw () {
   background(0);
   line(0, height/2, width, height/2);
   line(width/2, 0, width/2, height);
-  fleet.run();      //run fleet, doesnt do much right now
-  /*
-  if ( millis() > lastTimeCheck + timeIntervalFlag ) {
-    fleet.fleetCommand(true);
-    lastTimeCheck = millis();
-    //println( "Fire Thrusters!" );
-      
-    //fleet.fleetCommand(false);  
-    
-  }*/
   
+  //obj area!  
+  line(width/2 - 100, 0, width/2 - 100, 150); //left horizontal line
+  line(width/2 - 100, 150, (width/2 - 100) + 200, 150); //bottom line
+  line(width/2 - 100, 0, (width/2 - 100) + 200, 0); //top line  
+  line( (width/2 - 100) + 200, 150, (width/2) + 100, 0); //right horizontal line
+  
+  fleet.checkReachObj(width, height);
+  fleet.run();    
+  
+  //println("Time Counter: " + millis());
+  //println("Arg: " + millis() + "\n");
+  
+  if(millis() > burnTimeCheck + timeIntervalFlag ){
+    fleet.fleetCommand(false);
+  }
+  
+  //how do i shut off engines after 
+  if ( millis() > lastTimeCheck + timeIntervalFlag ) {
+    lastTimeCheck = millis(); //update
+    fleet.fleetCommand(true);
+  }
+    
   //draw asteroids
   for (int i = 0; i < asteroids.size(); i++) {
       stroke(255);
@@ -51,41 +66,28 @@ void draw () {
       asteroid.update();
       asteroid.wrap();
       
-      fleet.checkFleetCollision(asteroid.pos, asteroid.r); //sending position and r of asteroids
-      //checkFleetCollision(asteroid.pos, asteroid.r);
-      //send it to the fleet first
-      //ship.checkCollision(asteroid.pos, asteroid.r); //sends asteroid position and size
-      /*
-      if (   ship.hits(asteroid.pos, asteroid.r)   ) {//if this is true
-        println("Collision!");
-        //remove ship from play
-      }
-      */
-      
-      /*
-      for (int j = aships.size()-1; j >= 0; j--) {
-        Alienship a = aships.get(j);
-        if (ahitast) {
-          if (a.hits(asteroid.pos, asteroid.r)) {
-            aships.remove(j);
-            for(int m = 0; m < 4; m++){
-              Particle p = new Particle(a.pos);
-              p.vel.setMag(random(3, 5));
-              p.vel.mult(random(0.9, 1.1));
-              p.r = random(5, 12);
-              dust.add(p);
-            }
-          }
-        }
-      }*/
-      //
- 
+      fleet.checkFleetCollision(asteroid.pos, asteroid.r); //sending position and r of afleet.checkReachObj();steroids
     }
 }
 
 void mousePressed (){ //on click take a new action
   //adds fleet in combination
   fleet.addFleet(new Roci(mouseX, mouseY)); //where you click make new roci  
+  fleet.addFleet(new Roci(mouseX+10, mouseY+10)); //where you click make new roci
+  fleet.addFleet(new Roci(mouseX+10, mouseY)); //where you click make new roci
+  fleet.addFleet(new Roci(mouseX, mouseY+10)); //where you click make new roci
+  fleet.addFleet(new Roci(mouseX-10, mouseY-10)); //where you click make new roci
+  
+  //fleet.addFleet(new Roci(mouseX, mouseY)); //where you click make new roci  
+  fleet.addFleet(new Roci(mouseX-10, mouseY+10)); //where you click make new roci
+  fleet.addFleet(new Roci(mouseX-10, mouseY)); //where you click make new roci
+  fleet.addFleet(new Roci(mouseX, mouseY-10)); //where you click make new roci
+  fleet.addFleet(new Roci(mouseX+10, mouseY-10)); //where you click make new roci
+  
+  countDeployed += 10;
+  
+  println(countDeployed + " drones deployed");
+  
 }
 
 void keyPressed () { //on click take a new action
@@ -101,6 +103,8 @@ void keyPressed () { //on click take a new action
   } else if (key == 'e') {
     fleet.killBoid();
     //spaceFleet.remove(0);
+  } else if (key == 'e'){//on press start count
+   
   }
   
 }

@@ -1,5 +1,3 @@
-//defines a space boid class
-
 class Roci {
   PVector pos; //position
   PVector vel; //veloc
@@ -10,6 +8,9 @@ class Roci {
   PVector modSep;
   PVector modAli;
   PVector modCoh;
+  
+  //evasion
+  PVector modEvade;
   
   float r;
   boolean isAccel = false;
@@ -54,12 +55,20 @@ class Roci {
     acc.mult(0.99995); //Like Asteroids, but not short of Newtons full first Law add more zeroes
     pos.add(acc);
     
+    newtonsFirstLaw(acc);
+    
     //old convention
     //vel.mult(0.5); //results in some crazy shaking, if you add velocity they will
-    //pos.add(vel); //locks in from moving
-  
+    //pos.add(vel); //locks in from moving 
   }
 
+  void newtonsFirstLaw(PVector staysInMotion){ 
+    pos.add(staysInMotion); //this is i
+    //acc.normalize();
+    //acc.mult(1.0000000000001);
+    
+  }
+  
   void accel(){    
     acc = PVector.fromAngle(heading-PI/2); 
     acc.mult(0.995);
@@ -101,13 +110,6 @@ class Roci {
     }*/
     
   } 
- 
-  void borders() { //wrap around
-    if (pos.x < -r) pos.x = width+(r);
-    if (pos.y < -r) pos.y = height+(r);
-    if (pos.x > width+r) pos.x = (-r);
-    if (pos.y > height+r) pos.y = (-r);
-  }
   
   void diagnostics(){
     //notice this outputs for all individual boids
@@ -121,8 +123,14 @@ class Roci {
     //println("Tracking Vel: " + vel.x , vel.y + "\n");
     //print("\n");
   }
-  
-   
+ 
+  void borders() { //wrap around
+    if (pos.x < -r) pos.x = width+(r);
+    if (pos.y < -r) pos.y = height+(r);
+    if (pos.x > width+r) pos.x = (-r);
+    if (pos.y > height+r) pos.y = (-r);
+  }
+
   //boid CAS laws
   void applyForce(PVector force){
     vel.add(force); //this force really just does orientation its a vector that points to the target.
@@ -131,22 +139,28 @@ class Roci {
   void fleet (ArrayList<Roci> rocis){ 
   //fleet rules are in effect when there are 2 or more together
   //fleet rules are always in effect
-  //isAccel = true;
   //pvector separation, alignment, and cohesion
   
     modSep = separate(rocis);   // Separation
     modAli = align(rocis);      // Alignment
-    modCoh = cohesion(rocis);   // Cohesion vector function
+    modCoh = cohesion(rocis);   // Cohesion
+    
+    modEvade = evade(rocis);
     
     // Arbitrarily weigh forces
     modSep.mult(2.5);
     modAli.mult(1.0);
     modCoh.mult(1.0);
     
+    //
+    modEvade.mult(1.0);
+    
     //add force vectors to acceleration, this is a course correction
     applyForce(modSep);//they will only ever move constant
     applyForce(modAli);
-    applyForce(modCoh);    
+    applyForce(modCoh);  
+    
+    //applyForce(modEvade);
   }
   
   //rules
@@ -155,20 +169,17 @@ class Roci {
   // A method that calculates and applies a steering force towards a target
   // STEER = DESIRED MINUS VELOCITY
   // "motivation vector" steering force
-  //just goes straight?
-  //these things are behaviours, you dont write it explicitly
-  //you give it some rule and it obeys roughly
   
   PVector seek(PVector target) {
     
-    PVector mouseVect = new PVector(mouseX, mouseY); //a vector from mouse to boid
-    PVector desired = PVector.sub(mouseVect, pos);  // A vector pointing from the position to the target
+    //PVector mouseVect = new PVector(mouseX, mouseY); //a vector from mouse to boid
+    PVector desired = PVector.sub(obj, pos);  // A vector pointing from the position to the target
     
     // Scale to maximum speed
     desired.normalize();
     desired.mult(maxspeed);
         
-    // Steering = Desired minus Velocity
+    // Steering = Desired minus Velocity //This is the key equation
     PVector steer = PVector.sub(desired, vel);
     steer.limit(maxforce);  // Limit to maximum steering force
 
@@ -178,7 +189,10 @@ class Roci {
   // Cohesion
   // For the average position (i.e. center) of all nearby boids, calculate steering vector towards that position
   PVector cohesion (ArrayList<Roci> rocis) {
-    float neighbordist = 500;
+    
+    float neighbordist = 200; //This is an imporant parameter
+                              //how far a ship has to be to be considered a member of the flock
+    
     PVector sum = new PVector(0, 0);   // Start with empty vector to accumulate all positions
     int count = 0;
     
@@ -202,7 +216,9 @@ class Roci {
   // Alignment
   // For every nearby boid in the system, calculate the average velocity
   PVector align (ArrayList<Roci> rocis) {
-    float neighbordist = 50;
+    
+    float neighbordist = 80; //weight to head towards general direction of everybody else, contributes towards team work describe a sphere of beign a part of a common group velocity
+    
     PVector sum = new PVector(0, 0);
     int count = 0;
     for (Roci other : rocis) {
@@ -221,7 +237,7 @@ class Roci {
       // Implement Reynolds: Steering = Desired - Velocity
       sum.normalize();
       sum.mult(maxspeed);
-      PVector steer = PVector.sub(sum, vel);
+      PVector steer = PVector.sub(sum, vel); //sum and velocity
       steer.limit(maxforce);
       return steer;
     } 
@@ -234,7 +250,9 @@ class Roci {
   // Separation
   // Method checks for nearby boids and steers away
   PVector separate (ArrayList<Roci> rocis) {
-    float desiredseparation = 30.0f;
+    
+    float desiredseparation = 25.0f;//reduce this and they become close in
+    
     PVector steer = new PVector(0, 0, 0);
     int count = 0;
     // For every boid in the system, check if it's too close
@@ -270,12 +288,21 @@ class Roci {
     }
     return steer; //steering force
   }//end of separation rule
+  
+  PVector evade (ArrayList<Roci> rocis) {//must be conscious of circles and asteroids
+    
+    return new PVector(0, 0);
+  }
+  
 
   ////////////////////////////////////////////////////////////////////////////render
 
   void render() {
-    line(mouseX, mouseY, pos.x,pos.y); //a line from mouse to boid
+    //line(mouseX, mouseY, pos.x,pos.y); //a line from mouse to boid
     line(pos.x , pos.y, width/2 , 0);      //a line from boid to obj
+    
+      
+    circle(pos.x, pos.y, r+50);
     
     float theta = vel.heading() + PI/2;
     heading = theta;
@@ -284,6 +311,9 @@ class Roci {
     pushMatrix();
     translate(pos.x, pos.y);
     rotate(theta);
+    
+    //
+    
     
     //line(pos.x, pos.y, 540 , 0);
     
